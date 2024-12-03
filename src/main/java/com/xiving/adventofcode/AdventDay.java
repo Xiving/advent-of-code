@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AdventDay {
 
@@ -15,18 +17,18 @@ public abstract class AdventDay {
     this.day = day;
   }
 
-  public String getDayInput() {
+  public List<String> getDayInput() {
     Path inputPath = Path.of(String.format("src/main/resources/year%d/day%d.txt", year, day));
     try {
-      return Files.readString(inputPath, Charset.defaultCharset());
+      return Files.readAllLines(inputPath, Charset.defaultCharset());
     } catch (IOException e) {
-      return "";
+      return new ArrayList<>();
     }
   }
 
-  abstract public String solvePartOne(String input);
+  abstract public String solvePartOne(List<String> input);
   
-  abstract public String solvePartTwo(String input);
+  abstract public String solvePartTwo(List<String> input);
 
   public String solvePartOneForInput() {
     return solvePartOne(getDayInput());
