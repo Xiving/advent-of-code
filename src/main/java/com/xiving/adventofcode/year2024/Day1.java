@@ -12,39 +12,37 @@ public class Day1 extends Year2024Day {
   }
 
   @Override
-  public String solvePartOne(String input) {
-    List<Integer> leftIds = new ArrayList<>();
-    List<Integer> rightIds = new ArrayList<>();
+  public String solvePartOne(List<String> input) {
+    List<Integer> leftValues = new ArrayList<>(input.size());
+    List<Integer> rightValues = new ArrayList<>(input.size());
 
-    Scanner scanner = new Scanner(input);
-
-    while (scanner.hasNext()) {
-      leftIds.add(scanner.nextInt());
-      rightIds.add(scanner.nextInt());
+    for (String numberStr : input) {
+      String[] strArr = numberStr.split("\\s+");
+      leftValues.add(Integer.valueOf(strArr[0]));
+      rightValues.add(Integer.valueOf(strArr[1]));
     }
 
-    Collections.sort(leftIds);
-    Collections.sort(rightIds);
+    Collections.sort(leftValues);
+    Collections.sort(rightValues);
 
     int totalDifference = 0;
 
-    for (int i = 0; i < leftIds.size(); i++) {
-      totalDifference += Math.abs(leftIds.get(i) - rightIds.get(i));
+    for (int i = 0; i < leftValues.size(); i++) {
+      totalDifference += Math.abs(leftValues.get(i) - rightValues.get(i));
     }
 
     return String.valueOf(totalDifference);
   }
 
   @Override
-  public String solvePartTwo(String input) {
-    List<Integer> leftValues = new ArrayList<>();
-    List<Integer> rightValues = new ArrayList<>();
+  public String solvePartTwo(List<String> input) {
+    List<Integer> leftValues = new ArrayList<>(input.size());
+    List<Integer> rightValues = new ArrayList<>(input.size());
 
-    Scanner scanner = new Scanner(input);
-
-    while (scanner.hasNext()) {
-      leftValues.add(scanner.nextInt());
-      rightValues.add(scanner.nextInt());
+    for (String numberStr : input) {
+      String[] strArr = numberStr.split("\\s+");
+      leftValues.add(Integer.valueOf(strArr[0]));
+      rightValues.add(Integer.valueOf(strArr[1]));
     }
 
     Collections.sort(leftValues);
