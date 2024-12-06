@@ -25,10 +25,7 @@ public class Day6 extends Year2024Day {
     private int yDir;
 
     PatrolRoute(List<String> input) {
-      level = input.stream()
-          .map(String::toCharArray)
-          .toArray(char[][]::new);
-
+      level = input.stream().map(String::toCharArray).toArray(char[][]::new);
       int[] startPosition = levelStartPosition(level);
       y = startPosition[0];
       x = startPosition[1];
@@ -43,7 +40,7 @@ public class Day6 extends Year2024Day {
     }
 
     public void moveNext() {
-      if (getNext() == '#') {
+      if (level[y + yDir][x + xDir] == '#') {
         rotate();
       } else {
         y = y + yDir;
@@ -57,20 +54,20 @@ public class Day6 extends Year2024Day {
     }
 
     public boolean loopsWithObjectInFront(){
-      if (!hasNext() || getNext() == '#' || getNext() == 'O') {
+      if (!hasNext() || level[y + yDir][x + xDir] == '#' || level[y + yDir][x + xDir] == 'O') {
         return false;
       }
 
-      setNext('#');
+      level[y + yDir][x + xDir] = '#' ;
       rotate();
       setCurrent(DIR_MARKER[dir]);
 
       while (hasNext()) {
         moveNext();
 
-        if (getCurrent() == DIR_MARKER[dir] || getCurrent() == BI_DIR_MARKER[dir % 2]) {
+        if (level[y][x] == DIR_MARKER[dir] || level[y][x] == BI_DIR_MARKER[dir % 2]) {
           return true;
-        } else if (getCurrent() == DIR_MARKER[(dir + 2) % DIR_MARKER.length]) {
+        } else if (level[y][x] == DIR_MARKER[(dir + 2) % DIR_MARKER.length]) {
           setCurrent(BI_DIR_MARKER[dir % 2]);
         } else {
           setCurrent(DIR_MARKER[dir]);
@@ -79,31 +76,15 @@ public class Day6 extends Year2024Day {
 
       return false;
     }
-
-    private char getCurrent() {
-      return level[y][x];
-    }
-
+    
     public void setCurrent(char c) {
       level[y][x] = c;
-    }
-
-    private char getNext() {
-      return level[y + yDir][x + xDir];
-    }
-
-    private void setNext(char c) {
-      level[y + yDir][x + xDir] = c;
     }
 
     private void rotate() {
       dir = (dir + 1) % DIRECTIONS.length;
       yDir = DIRECTIONS[dir];
       xDir = DIRECTIONS[(dir + 1) % DIRECTIONS.length];
-    }
-
-    private void save() {
-
     }
 
     private static int[] levelStartPosition(char[][] level) {
