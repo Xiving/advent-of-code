@@ -2,8 +2,7 @@ package com.xiving.adventofcode.year2024;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BinaryOperator;
-import java.util.stream.LongStream;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 public class Day7 extends Year2024Day {
@@ -12,69 +11,63 @@ public class Day7 extends Year2024Day {
     super(7);
   }
 
-  private record Equation(long result, LongStream numbers) {
+  private record Equation(long result, Stream<String> constants) {
 
   }
 
   private static Equation fromInput(String input) {
-    String[] resultAndNumbers = input.split(":");
-    long result = Long.parseLong(resultAndNumbers[0]);
-    LongStream numberStream = Arrays.stream(resultAndNumbers[1].split(" "))
-        .filter(str -> !str.isBlank())
-        .mapToLong(Long::parseLong);
+    String[] resultAndConstants = input.split(":");
+    long result = Long.parseLong(resultAndConstants[0]);
+    Stream<String> constantStream = Arrays
+        .stream(resultAndConstants[1].split(" "))
+        .filter(str -> !str.isBlank());
 
-    return new Equation(result, numberStream);
+    return new Equation(result, constantStream);
   }
 
-  private static Stream<Long> applyFunToAll(List<BinaryOperator<Long>> functions, Stream<Long> partialResults, Long nextNumber) {
-    return partialResults.flatMap(v -> functions.stream().map(function -> function.apply(v, nextNumber)));
-  }
-
-  private static boolean isValidEquation(Equation equation, List<BinaryOperator<Long>> operantFunctions) {
-    return equation.numbers
-        .boxed()
+  private static boolean isValidEquation(Equation equation, BiFunction<Long, String, Stream<Long>> operantsFun) {
+    return equation.constants
         .reduce(
             Stream.of(0L),
-            (xs, x) ->
-                applyFunToAll(operantFunctions, xs, x)
-                    .filter(v -> v <= equation.result),
-            Stream::concat
-        )
+            (leftNumbers, rightNumberStr) -> leftNumbers
+                .flatMap(leftNumber -> operantsFun.apply(leftNumber, rightNumberStr))
+                .filter(v -> v <= equation.result),
+            Stream::concat)
         .anyMatch(e -> e == equation.result);
   }
 
   @Override
   public String solvePartOne(List<String> input) {
-    List<BinaryOperator<Long>> allowedOperants = List.of(Math::addExact, Math::multiplyExact);
+    BiFunction<Long, String, Stream<Long>> operantsFun = (leftLong, rightStr) -> {
+      Long rightLong = Long.parseLong(rightStr);
+      return Stream.of(Math.addExact(leftLong, rightLong), Math.multiplyExact(leftLong, rightLong));
+    };
 
     long validEquationCount = input.stream()
         .map(Day7::fromInput)
-        .filter(equation -> isValidEquation(equation, allowedOperants))
+        .filter(equation -> isValidEquation(equation, operantsFun))
         .mapToLong(Equation::result)
         .sum();
 
     return String.valueOf(validEquationCount);
   }
 
-  private static long getMultipleOf10Above(long value) {
-    if (value < 100) {
-      return value < 10 ? 10 : 100;
-    } else {
-      return value < 1000 ? 1000 : 10000;
-    }
-  }
-
-  private static Long customOrFunction(Long leftValue, Long rightValue) {
-    return leftValue * getMultipleOf10Above(rightValue) + rightValue;
-  }
-
   @Override
   public String solvePartTwo(List<String> input) {
-    List<BinaryOperator<Long>> allowedOperants = List.of(Math::addExact, Math::multiplyExact, Day7::customOrFunction);
+    BiFunction<Long, String, Stream<Long>> operantsFun = (leftLong, rightStr) -> {
+      Long rightLong = Long.parseLong(rightStr);
+      long rightDigitCount = rightStr.length();
+
+      return Stream.of(
+          Math.addExact(leftLong, rightLong),
+          Math.multiplyExact(leftLong, rightLong),
+          leftLong * (long) Math.pow(10, rightDigitCount) + rightLong
+      );
+    };
 
     long validEquationCount = input.stream()
         .map(Day7::fromInput)
-        .filter(equation -> isValidEquation(equation, allowedOperants))
+        .filter(equation -> isValidEquation(equation, operantsFun))
         .mapToLong(Equation::result)
         .sum();
 
