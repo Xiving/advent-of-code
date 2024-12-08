@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 public class Day8 extends Year2024Day {
 
@@ -17,63 +16,73 @@ public class Day8 extends Year2024Day {
     super(8);
   }
 
-  private record Antenna(int x, int y) {
+  private record Coord(int x, int y) {
 
     boolean inBounds(int xBound, int yBound) {
       return 0 <= this.y && this.y < yBound && 0 <= this.x && this.x < xBound;
     }
   }
 
-  private static Stream<List<Antenna>> antennasGroupedByFrequency(List<String> lines) {
-    Map<Character, List<Antenna>> antennasByFrequency = new HashMap<>();
+  private static Stream<List<Coord>> coordsGroupedByFrequency(List<String> lines) {
+    Map<Character, List<Coord>> coordsByFrequency = new HashMap<>();
 
     for (int y = 0; y < lines.size(); y++) {
       char[] chars = lines.get(y).toCharArray();
 
       for (int x = 0; x < chars.length; x++) {
         if (chars[x] != '.') {
-          List<Antenna> antennas = antennasByFrequency.getOrDefault(chars[x], new ArrayList<>());
-          antennas.add(new Antenna(x, y));
-          antennasByFrequency.put(chars[x], antennas);
+          List<Coord> coords = coordsByFrequency.getOrDefault(chars[x], new ArrayList<>());
+          coords.add(new Coord(x, y));
+          coordsByFrequency.put(chars[x], coords);
         }
       }
     }
 
-    return antennasByFrequency.values().stream();
+    return coordsByFrequency.values().stream();
   }
 
-  private static Stream<Antenna> getAntinodesPart1(Antenna antenna1, Antenna antenna2) {
-    int xDiff = antenna1.x - antenna2.x;
-    int yDiff = antenna1.y - antenna2.y;
+  private static Stream<Coord> getAntinodesPart1(Coord coord1, Coord coord2) {
+    int xDiff = coord1.x - coord2.x;
+    int yDiff = coord1.y - coord2.y;
 
     return Stream.of(
-        new Antenna(antenna1.x + xDiff, antenna1.y + yDiff),
-        new Antenna(antenna2.x - xDiff, antenna2.y - yDiff)
+        new Coord(coord1.x + xDiff, coord1.y + yDiff),
+        new Coord(coord2.x - xDiff, coord2.y - yDiff)
     );
   }
 
-  private static Stream<Antenna> getAntinodesPart2(Antenna antenna1, Antenna antenna2, int xBound, int yBound) {
-    int xDiff = antenna1.x - antenna2.x;
-    int yDiff = antenna1.y - antenna2.y;
-    List<Antenna> antinodes = new ArrayList<>();
+  private static Stream<Coord> getAntinodesPart2(Coord coord1, Coord coord2, int xBound, int yBound) {
+    int xDiff = coord1.x - coord2.x;
+    int yDiff = coord1.y - coord2.y;
+    Builder<Coord> antinodes = Stream.builder();
 
-    for (
-        Antenna antenna = new Antenna(antenna1.x, antenna1.y);
-        antenna.inBounds(xBound, yBound);
-        antenna = new Antenna(antenna.x + xDiff, antenna.y + yDiff)
-    ) {
-      antinodes.add(antenna);
+    Coord coord = new Coord(coord1.x, coord1.y);
+
+    while (coord.inBounds(xBound, yBound)) {
+      antinodes.add(coord);
+      coord = new Coord(coord.x + xDiff, coord.y + yDiff);
     }
 
-    for (
-        Antenna antenna = new Antenna(antenna2.x, antenna2.y);
-        antenna.inBounds(xBound, yBound);
-        antenna = new Antenna(antenna.x - xDiff, antenna.y - yDiff)
-    ) {
-      antinodes.add(antenna);
+    coord = new Coord(coord2.x, coord2.y);
+
+    while (coord.inBounds(xBound, yBound)) {
+      antinodes.add(coord);
+      coord = new Coord(coord.x - xDiff, coord.y - yDiff);
     }
 
-    return antinodes.stream();
+    return antinodes.build();
+  }
+
+  private static Stream<Coord> applyToAllCoordPairs(List<Coord> coords, BiFunction<Coord, Coord, Stream<Coord>> fun) {
+    Builder<Coord> coordBuilder = Stream.builder();
+
+    for (int i = 0; i < coords.size() - 1; i++) {
+      for (int j = i + 1; j < coords.size(); j++) {
+        fun.apply(coords.get(i), coords.get(j)).forEach(coordBuilder::add);
+      }
+    }
+
+    return coordBuilder.build();
   }
 
   @Override
@@ -81,12 +90,12 @@ public class Day8 extends Year2024Day {
     int yBound = input.size();
     int xBound = input.get(0).length();
 
-    Set<Antenna> uniqueAntennas = antennasGroupedByFrequency(input)
-        .flatMap(antennas -> allPairStreamFunction(antennas, Day8::getAntinodesPart1))
-        .filter(antenna -> antenna.inBounds(xBound, yBound))
+    Set<Coord> uniqueCoords = coordsGroupedByFrequency(input)
+        .flatMap(coords -> applyToAllCoordPairs(coords, Day8::getAntinodesPart1))
+        .filter(coords -> coords.inBounds(xBound, yBound))
         .collect(Collectors.toSet());
 
-    return String.valueOf(uniqueAntennas.size());
+    return String.valueOf(uniqueCoords.size());
   }
 
   @Override
@@ -94,18 +103,13 @@ public class Day8 extends Year2024Day {
     int yBound = input.size();
     int xBound = input.get(0).length();
 
-    Set<Antenna> uniqueAntennas = antennasGroupedByFrequency(input)
-        .flatMap(coords -> allPairStreamFunction(coords, (antenna1, antenna2) -> getAntinodesPart2(antenna1, antenna2, xBound, yBound)))
+    BiFunction<Coord, Coord, Stream<Coord>> antinodeFunction =
+        (coord1, coord2) -> getAntinodesPart2(coord1, coord2, xBound, yBound);
+
+    Set<Coord> uniqueCoords = coordsGroupedByFrequency(input)
+        .flatMap(coords -> applyToAllCoordPairs(coords, antinodeFunction))
         .collect(Collectors.toSet());
 
-    return String.valueOf(uniqueAntennas.size());
-  }
-
-  private static <T, R> Stream<R> allPairStreamFunction(List<T> inputs, BiFunction<T, T, Stream<R>> function) {
-    return IntStream.range(0, inputs.size() - 1)
-        .mapToObj(i -> IntStream.range(i + 1, inputs.size())
-            .mapToObj(j -> function.apply(inputs.get(i), inputs.get(j)))
-            .flatMap(Function.identity())
-        ).flatMap(Function.identity());
+    return String.valueOf(uniqueCoords.size());
   }
 }
