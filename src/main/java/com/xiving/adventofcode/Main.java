@@ -1,5 +1,7 @@
 package com.xiving.adventofcode;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public class Main {
@@ -10,9 +12,20 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      System.out.println(String.format("Year %d, Day %d:", day.year, day.day));
-      System.out.println("\tPart 1: " + day.solvePartOneForInput());
-      System.out.println("\tPart 2: " + day.solvePartTwoForInput());
+      System.out.println(String.format("Day %d:", day.day));
+      Instant start = Instant.now();
+      String part1 = day.solvePartOneForInput();
+      Instant finish = Instant.now();
+      long timeElapsedPart1 = Duration.between(start, finish).toMillis();
+
+      System.out.printf("%5dms - Part 1: %s%n", timeElapsedPart1, part1);
+
+      start = Instant.now();
+      String part2 = day.solvePartTwoForInput();
+      finish = Instant.now();
+      long timeElapsedPart2 = Duration.between(start, finish).toMillis();
+
+      System.out.printf("%5dms - Part 2: %s%n", timeElapsedPart2, part2);
     }
   }
 }
