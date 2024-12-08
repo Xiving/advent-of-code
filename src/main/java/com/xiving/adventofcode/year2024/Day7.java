@@ -3,6 +3,7 @@ package com.xiving.adventofcode.year2024;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BinaryOperator;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public class Day7 extends Year2024Day {
@@ -11,37 +12,35 @@ public class Day7 extends Year2024Day {
     super(7);
   }
 
-  private record Equation(long result, long[] numbers) {
+  private record Equation(long result, LongStream numbers) {
 
   }
 
   private static Equation fromInput(String input) {
     String[] resultAndNumbers = input.split(":");
     long result = Long.parseLong(resultAndNumbers[0]);
-    long[] numbers = Arrays.stream(resultAndNumbers[1].split(" "))
+    LongStream numberStream = Arrays.stream(resultAndNumbers[1].split(" "))
         .filter(str -> !str.isBlank())
-        .mapToLong(Long::parseLong)
-        .toArray();
+        .mapToLong(Long::parseLong);
 
-    return new Equation(result, numbers);
+    return new Equation(result, numberStream);
   }
 
-  private static List<Long> applyFunToAll(List<BinaryOperator<Long>> functions, Stream<Long> partialResults, Long nextNumber) {
-    return partialResults
-        .flatMap(v -> functions.stream().map(function -> function.apply(v, nextNumber)))
-        .toList();
+  private static Stream<Long> applyFunToAll(List<BinaryOperator<Long>> functions, Stream<Long> partialResults, Long nextNumber) {
+    return partialResults.flatMap(v -> functions.stream().map(function -> function.apply(v, nextNumber)));
   }
 
-  private static boolean isValidEquation(Equation equation, List<BinaryOperator<Long>> allowedOperantFunctions) {
-    List<Long> possibleResults = Arrays.stream(equation.numbers).boxed()
+  private static boolean isValidEquation(Equation equation, List<BinaryOperator<Long>> operantFunctions) {
+    return equation.numbers
+        .boxed()
         .reduce(
             Stream.of(0L),
-            (xs, x) -> applyFunToAll(allowedOperantFunctions, xs, x)
-                .stream()
-                .filter(v -> v <= equation.result),
-            Stream::concat)
-        .toList();
-    return possibleResults.contains(equation.result);
+            (xs, x) ->
+                applyFunToAll(operantFunctions, xs, x)
+                    .filter(v -> v <= equation.result),
+            Stream::concat
+        )
+        .anyMatch(e -> e == equation.result);
   }
 
   @Override
@@ -57,8 +56,16 @@ public class Day7 extends Year2024Day {
     return String.valueOf(validEquationCount);
   }
 
+  private static long getMultipleOf10Above(long value) {
+    if (value < 100) {
+      return value < 10 ? 10 : 100;
+    } else {
+      return value < 1000 ? 1000 : 10000;
+    }
+  }
+
   private static Long customOrFunction(Long leftValue, Long rightValue) {
-    return Long.parseLong(leftValue.toString() + rightValue.toString());
+    return leftValue * getMultipleOf10Above(rightValue) + rightValue;
   }
 
   @Override
