@@ -12,6 +12,10 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
+      if (day.day != 10) {
+        continue;
+      }
+
       System.out.println(String.format("Day %d:", day.day));
       Instant start = Instant.now();
       String part1 = day.solvePartOneForInput();

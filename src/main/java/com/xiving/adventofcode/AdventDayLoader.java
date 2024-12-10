@@ -1,6 +1,7 @@
 package com.xiving.adventofcode;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -49,7 +50,9 @@ public class AdventDayLoader {
             getDaysOfYear(year).stream()
                 .map(day -> loadDayClass(year, day))
                 .filter(Optional::isPresent)
-                .map(Optional::get))
+                .map(Optional::get)
+                .sorted(Comparator.comparingInt(e -> e.day))
+        )
         .collect(Collectors.toList());
   }
 
