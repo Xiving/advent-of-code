@@ -12,7 +12,9 @@ public class Day11 extends Year2024Day {
     super(11);
   }
 
-  private static long recCountCached(long number, long count, int depth, Map<Long, Map<Integer, Long>> cache) {
+  private static final Map<Long, Map<Integer, Long>> cache = new HashMap<>();
+
+  private static long calcStonesCached(long number, int depth) {
     Map<Integer, Long> numberCache = cache.get(number);
 
     if (Objects.isNull(numberCache)) {
@@ -23,63 +25,52 @@ public class Day11 extends Year2024Day {
     long cachedResult = numberCache.getOrDefault(depth, -1L);
 
     if (cachedResult != -1) {
-      return cachedResult + count;
+      return cachedResult;
     }
 
-    long result = recCount(number, count, depth, cache);
-    numberCache.put(depth, result - count);
-    return result;
+    long count = caclStones(number, depth);
+    numberCache.put(depth, count);
+    return count;
   }
 
-  private static long recCount(long number, long count, int depth, Map<Long, Map<Integer, Long>> cache) {
+  private static long caclStones(long number, int depth) {
     if (depth <= 0) {
-      return count + 1L;
+      return 1L;
     }
 
     if (number == 0) {
-      return recCountCached(1, count, depth - 1, cache);
+      return calcStonesCached(1, depth - 1);
     }
 
-    int numberOfDigits = (int) (Math.log10(number) + 1);
+    int digits = (int) (Math.log10(number) + 1);
 
-    if (numberOfDigits % 2 == 0) {
-      long x = (long) Math.pow(10, (double) numberOfDigits / 2);
-      long rightValue = number % x;
-      long countLeft = recCountCached((number - rightValue) / x, count, depth - 1, cache);
-      return recCountCached(rightValue, countLeft, depth - 1, cache);
+    if (digits % 2 == 0) {
+      long divisor = (long) Math.pow(10, (double) digits / 2);
+      long rightValue = number % divisor;
+      long count = calcStonesCached((number - rightValue) / divisor, depth - 1);
+      count += calcStonesCached(rightValue, depth - 1);
+      return count;
     } else {
-      return recCountCached(number * 2024, count, depth - 1, cache);
+      return calcStonesCached(number * 2024, depth - 1);
     }
   }
 
   @Override
   public String solvePartOne(List<String> input) {
-    List<Long> stones = Arrays.stream(input.getFirst().split(" "))
+    Long total = Arrays.stream(input.getFirst().split(" "))
         .map(Long::valueOf)
-        .toList();
-
-    HashMap<Long, Map<Integer, Long>> cache = new HashMap<>();
-    long total = 0;
-
-    for (Long stone : stones) {
-      total = recCount(stone, total, 25, cache);
-    }
+        .mapToLong(stone -> calcStonesCached(stone, 25))
+        .sum();
 
     return String.valueOf(total);
   }
 
   @Override
   public String solvePartTwo(List<String> input) {
-    List<Long> stones = Arrays.stream(input.getFirst().split(" "))
+    Long total = Arrays.stream(input.getFirst().split(" "))
         .map(Long::valueOf)
-        .toList();
-
-    HashMap<Long, Map<Integer, Long>> cache = new HashMap<>();
-    long total = 0;
-
-    for (Long stone : stones) {
-      total = recCountCached(stone, total, 75, cache);
-    }
+        .mapToLong(stone -> calcStonesCached(stone, 75))
+        .sum();
 
     return String.valueOf(total);
   }
