@@ -12,7 +12,7 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      if (day.day != 11) {
+      if (day.day != 12) {
         continue;
       }
 
