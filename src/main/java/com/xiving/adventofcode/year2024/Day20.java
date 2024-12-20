@@ -2,8 +2,6 @@ package com.xiving.adventofcode.year2024;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Day20 extends Year2024Day {
 
