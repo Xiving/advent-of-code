@@ -12,9 +12,9 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-//      if (day.day != 20) {
-//        continue;
-//      }
+      if (day.day != 21) {
+        continue;
+      }
 
       System.out.println(String.format("Day %d:", day.day));
       Instant start = Instant.now();
