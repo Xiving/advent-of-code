@@ -40,7 +40,7 @@ public class Day7 extends Year2024Day {
   public String solvePartOne(List<String> input) {
     BiFunction<Long, String, Stream<Long>> operantsFun = (leftLong, rightStr) -> {
       Long rightLong = Long.parseLong(rightStr);
-      return Stream.of(Math.addExact(leftLong, rightLong), Math.multiplyExact(leftLong, rightLong));
+      return Stream.of(leftLong + rightLong, leftLong * rightLong);
     };
 
     long validEquationCount = input.stream()
@@ -59,8 +59,8 @@ public class Day7 extends Year2024Day {
       long rightDigitCount = rightStr.length();
 
       return Stream.of(
-          Math.addExact(leftLong, rightLong),
-          Math.multiplyExact(leftLong, rightLong),
+          leftLong + rightLong,
+          leftLong * rightLong,
           leftLong * (long) Math.pow(10, rightDigitCount) + rightLong
       );
     };
