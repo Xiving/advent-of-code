@@ -16,8 +16,6 @@ public class Day21 extends Year2024Day {
 
   }
 
-  private static int cacheHits = 0;
-
   private static final Map<Character, Button> NUM_PAD_CONFIG = Map.ofEntries(
       entry('7', new Button(0, 0)), entry('8', new Button(0, 1)), entry('9', new Button(0, 2)),
       entry('4', new Button(1, 0)), entry('5', new Button(1, 1)), entry('6', new Button(1, 2)),
@@ -69,7 +67,6 @@ public class Day21 extends Year2024Day {
       Long cachedValue = cache.get(sequence);
 
       if (cachedValue != null) {
-        cacheHits++;
         return cachedValue;
       }
 
