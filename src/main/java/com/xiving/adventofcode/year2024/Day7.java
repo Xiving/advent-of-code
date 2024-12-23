@@ -52,6 +52,16 @@ public class Day7 extends Year2024Day {
     return String.valueOf(validEquationCount);
   }
 
+  private static long powTen(long amount) {
+    long result = 10;
+
+    for (int i = 1; i < amount; i++) {
+      result *= 10;
+    }
+
+    return result;
+  }
+
   @Override
   public String solvePartTwo(List<String> input) {
     BiFunction<Long, String, Stream<Long>> operantsFun = (leftLong, rightStr) -> {
@@ -61,7 +71,7 @@ public class Day7 extends Year2024Day {
       return Stream.of(
           leftLong + rightLong,
           leftLong * rightLong,
-          leftLong * (long) Math.pow(10, rightDigitCount) + rightLong
+          leftLong * powTen(rightDigitCount) + rightLong
       );
     };
 
