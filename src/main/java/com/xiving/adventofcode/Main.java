@@ -12,7 +12,11 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      System.out.println(String.format("┌ %d ─ Day %2d ──┐", day.year, day.day));
+      if (day.year != 2019 || day.day != 1) {
+        continue;
+      }
+
+      System.out.println(String.format("┌ %d ─ Day %2d", day.year, day.day));
       Instant start = Instant.now();
       String part1 = day.solvePartOneForInput();
       Instant finish = Instant.now();
