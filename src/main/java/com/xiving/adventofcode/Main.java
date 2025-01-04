@@ -12,7 +12,7 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      if (day.year != 2019 || day.day != 3) {
+      if (day.year != 2019 || day.day != 4) {
         continue;
       }
 
