@@ -6,13 +6,15 @@ import java.util.List;
 
 public class Main {
 
+  private static final boolean DEBUG = false;
+
   public static void main(String[] args) {
     List<AdventDay> adventDays = AdventDayLoader.loadAllAdventDays();
 
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      if (day.year != 2019 || day.day != 4) {
+      if (day.year != 2019 || day.day != 6) {
         continue;
       }
 
@@ -30,6 +32,12 @@ public class Main {
       long timeElapsedPart2 = Duration.between(start, finish).toMillis();
 
       System.out.printf("└ %5dms) Part 2: %s%n%n", timeElapsedPart2, part2);
+    }
+  }
+
+  public static void debug(String format, Object... args) {
+    if (DEBUG) {
+      System.out.printf(format + "%n", args);
     }
   }
 }

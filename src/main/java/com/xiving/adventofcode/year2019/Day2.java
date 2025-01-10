@@ -10,7 +10,7 @@ public class Day2 extends Year2019Day{
 
   @Override
   public String solvePartOne(List<String> input) {
-    Intcode intcode = Intcode.ofString(input.getFirst());
+    Intcode intcode = Intcode.ofInput(input.getFirst());
     intcode.setAddress(1, 12);
     intcode.setAddress(2, 2);
     intcode.run();
@@ -19,7 +19,7 @@ public class Day2 extends Year2019Day{
 
   @Override
   public String solvePartTwo(List<String> input) {
-    Intcode intcode = Intcode.ofString(input.getFirst());
+    Intcode intcode = Intcode.ofInput(input.getFirst());
 
     for (int noun = 0; noun < 100; noun++) {
       for (int verb = 0; verb < 100; verb++) {
