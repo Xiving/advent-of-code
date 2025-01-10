@@ -16,7 +16,8 @@ class Intcode {
   private final int[] initial;
   private final int[] program;
   private int pc;
-  private boolean hasNext;
+  private boolean halted;
+  private boolean awaitingInput;
 
   private Deque<Integer> input;
   private List<Integer> output;
@@ -25,7 +26,7 @@ class Intcode {
     this.initial = program;
     this.program = Arrays.copyOf(program, program.length);
     this.pc = 0;
-    this.hasNext = true;
+    this.halted = false;
 
     this.input = new ArrayDeque<>();
     this.output = new ArrayList<>();
@@ -36,14 +37,23 @@ class Intcode {
     return new Intcode(program);
   }
 
-  void setInput(Integer... inputs) {
-    input.addAll(Arrays.asList(inputs));
+  Intcode copy() {
+    return new Intcode(this.program);
   }
 
-  void run() {
-    while (this.hasNext) {
+  Intcode input(Integer... inputs) {
+    input.addAll(Arrays.asList(inputs));
+    this.awaitingInput = false;
+    this.run();
+    return this;
+  }
+
+  boolean run() {
+    while (!this.halted && !this.awaitingInput) {
       OPCODE_TABLE.get(opcodeFromInstr()).accept(this);
     }
+
+    return this.halted;
   }
 
   void setAddress(int i, int value) {
@@ -54,14 +64,22 @@ class Intcode {
     return program[i];
   }
 
-  void reset() {
+  Intcode reset() {
     System.arraycopy(initial, 0, program, 0, initial.length);
     pc = 0;
-    hasNext = true;
+    halted = false;
+    awaitingInput = false;
+    return this;
   }
 
-  List<Integer> getOutput() {
-    return output;
+  List<Integer> flushOutput() {
+    List<Integer> result = output;
+    output = new ArrayList<>();
+    return result;
+  }
+
+  boolean hasHalted() {
+    return halted;
   }
 
   //
@@ -72,7 +90,7 @@ class Intcode {
       entry(1, Intcode::add),
       entry(2, Intcode::mul),
 
-      entry(3, Intcode::input),
+      entry(3, Intcode::execute),
       entry(4, Intcode::output),
 
       entry(5, Intcode::jumpIfTrue),
@@ -95,8 +113,14 @@ class Intcode {
     pc += 4;
   }
 
-  void input() {
+  void execute() {
     Main.debug("pc: %d, input", pc);
+
+    if (input.isEmpty()) {
+      this.awaitingInput = true;
+      return;
+    }
+
     writeParam(1, input.pop());
     pc += 2;
   }
@@ -131,7 +155,7 @@ class Intcode {
 
   void halt() {
     Main.debug("pc: %d, halt", pc);
-    hasNext = false;
+    halted = true;
     pc += 1;
   }
 

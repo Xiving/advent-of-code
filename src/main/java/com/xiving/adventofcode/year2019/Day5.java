@@ -12,16 +12,16 @@ public class Day5 extends Year2019Day {
   @Override
   public String solvePartOne(List<String> input) {
     Intcode intcode = Intcode.ofInput(input.getFirst());
-    intcode.setInput(1);
+    intcode.input(1);
     intcode.run();
-    return intcode.getOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
+    return intcode.flushOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
   }
 
   @Override
   public String solvePartTwo(List<String> input) {
     Intcode intcode = Intcode.ofInput(input.getFirst());
-    intcode.setInput(5);
+    intcode.input(5);
     intcode.run();
-    return intcode.getOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
+    return intcode.flushOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
   }
 }
