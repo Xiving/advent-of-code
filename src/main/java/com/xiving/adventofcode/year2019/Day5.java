@@ -12,7 +12,7 @@ public class Day5 extends Year2019Day {
   @Override
   public String solvePartOne(List<String> input) {
     Intcode intcode = Intcode.ofInput(input.getFirst());
-    intcode.input(1);
+    intcode.run(1L);
     intcode.run();
     return intcode.flushOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
   }
@@ -20,7 +20,7 @@ public class Day5 extends Year2019Day {
   @Override
   public String solvePartTwo(List<String> input) {
     Intcode intcode = Intcode.ofInput(input.getFirst());
-    intcode.input(5);
+    intcode.run(5L);
     intcode.run();
     return intcode.flushOutput().stream().map(Object::toString).collect(Collectors.joining(", "));
   }

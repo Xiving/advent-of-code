@@ -13,19 +13,23 @@ import java.util.function.Consumer;
 
 class Intcode {
 
-  private final int[] initial;
-  private final int[] program;
+  private final long[] initial;
+  private long[] program;
   private int pc;
+  private int relativeBase;
+
   private boolean halted;
   private boolean awaitingInput;
 
-  private Deque<Integer> input;
-  private List<Integer> output;
+  private Deque<Long> input;
+  private List<Long> output;
 
-  Intcode(int[] program) {
+  Intcode(long[] program) {
     this.initial = program;
     this.program = Arrays.copyOf(program, program.length);
     this.pc = 0;
+    this.relativeBase = 0;
+
     this.halted = false;
 
     this.input = new ArrayDeque<>();
@@ -33,47 +37,42 @@ class Intcode {
   }
 
   static Intcode ofInput(String input) {
-    int[] program = Arrays.stream(input.split(",")).mapToInt(Integer::parseInt).toArray();
+    long[] program = Arrays.stream(input.split(",")).mapToLong(Long::parseLong).toArray();
     return new Intcode(program);
   }
 
   Intcode copy() {
-    return new Intcode(this.program);
+    return new Intcode(this.initial);
   }
 
-  Intcode input(Integer... inputs) {
+  Intcode run(Long... inputs) {
     input.addAll(Arrays.asList(inputs));
     this.awaitingInput = false;
-    this.run();
-    return this;
-  }
 
-  boolean run() {
     while (!this.halted && !this.awaitingInput) {
       OPCODE_TABLE.get(opcodeFromInstr()).accept(this);
     }
 
-    return this.halted;
-  }
-
-  void setAddress(int i, int value) {
-    program[i] = value;
-  }
-
-  int getAddress(int i) {
-    return program[i];
+    return this;
   }
 
   Intcode reset() {
     System.arraycopy(initial, 0, program, 0, initial.length);
+
+    if (program.length > initial.length) {
+      for (int i = initial.length; i < program.length; i++) {
+        program[i] = 0;
+      }
+    }
+
     pc = 0;
     halted = false;
     awaitingInput = false;
     return this;
   }
 
-  List<Integer> flushOutput() {
-    List<Integer> result = output;
+  List<Long> flushOutput() {
+    List<Long> result = output;
     output = new ArrayList<>();
     return result;
   }
@@ -90,13 +89,15 @@ class Intcode {
       entry(1, Intcode::add),
       entry(2, Intcode::mul),
 
-      entry(3, Intcode::execute),
+      entry(3, Intcode::input),
       entry(4, Intcode::output),
 
       entry(5, Intcode::jumpIfTrue),
       entry(6, Intcode::jumpIfFalse),
       entry(7, Intcode::lessThan),
       entry(8, Intcode::equals),
+
+      entry(9, Intcode::adjRelativeBase),
 
       entry(99, Intcode::halt)
   );
@@ -113,7 +114,7 @@ class Intcode {
     pc += 4;
   }
 
-  void execute() {
+  void input() {
     Main.debug("pc: %d, input", pc);
 
     if (input.isEmpty()) {
@@ -133,12 +134,12 @@ class Intcode {
 
   void jumpIfTrue() {
     Main.debug("pc: %d, jumpIfTrue", pc);
-    pc = readParam(1) != 0 ? readParam(2) : pc + 3;
+    pc = readParam(1) != 0 ? (int) readParam(2) : pc + 3;
   }
 
   void jumpIfFalse() {
     Main.debug("pc: %d, jumpIfFalse", pc);
-    pc = readParam(1) == 0 ? readParam(2) : pc + 3;
+    pc = readParam(1) == 0 ? (int) readParam(2) : pc + 3;
   }
 
   void lessThan() {
@@ -153,6 +154,12 @@ class Intcode {
     pc += 4;
   }
 
+  void adjRelativeBase() {
+    Main.debug("pc: %d, adjRelativeBase", pc);
+    relativeBase += (int) readParam(1);
+    pc += 2;
+  }
+
   void halt() {
     Main.debug("pc: %d, halt", pc);
     halted = true;
@@ -163,19 +170,49 @@ class Intcode {
   // UTIL
   //
 
-  int opcodeFromInstr() {
-    return program[pc] % 100;
+  void setAddress(int i, long value) {
+    if (program.length <= i) {
+      growMemory(i);
+    }
+
+    program[i] = value;
   }
 
-  int readParam(int param) {
+  long getAddress(int i) {
+    if (program.length < i) {
+      growMemory(i);
+    }
+
+    return program[i];
+  }
+
+  private void growMemory(int until) {
+    int diff = (1 + until) - program.length;
+    int newLength = program.length + Math.max(100, 2 * diff);
+    long[] newMemory = new long[newLength];
+    System.arraycopy(program, 0, newMemory, 0, program.length);
+    program = newMemory;
+  }
+
+
+  int opcodeFromInstr() {
+    return (int) (program[pc] % 100);
+  }
+
+  long readParam(int param) {
     return switch (ParameterMode.fromInst(program[pc], param)) {
-      case POSITION -> program[program[pc + param]];
+      case POSITION -> getAddress((int) program[pc + param]);
       case IMMEDIATE -> program[pc + param];
+      case RELATIVE -> getAddress((int) (relativeBase + program[pc + param]));
     };
   }
 
-  void writeParam(int param, int value) {
-    program[program[pc + param]] = value;
+  void writeParam(int param, long value) {
+    switch (ParameterMode.fromInst(program[pc], param)) {
+      case POSITION -> setAddress((int) program[pc + param], value);
+      case RELATIVE -> setAddress((int) (relativeBase + program[pc + param]), value);
+      case IMMEDIATE -> throw new UnsupportedOperationException("Writing in IMMEDIATE parameter mode not supported!");
+    }
   }
 
 }

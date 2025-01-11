@@ -2,9 +2,10 @@ package com.xiving.adventofcode.year2019;
 
 public enum ParameterMode {
   POSITION,
-  IMMEDIATE;
+  IMMEDIATE,
+  RELATIVE;
 
-  static ParameterMode fromInst(int instr, int parameter) {
+  static ParameterMode fromInst(long instr, int parameter) {
     int divisor = 100;
     parameter -= 1;
 
@@ -13,6 +14,6 @@ public enum ParameterMode {
       parameter -= 1;
     }
 
-    return ParameterMode.values()[(instr / divisor) % 10];
+    return ParameterMode.values()[(int) ((instr / divisor) % 10)];
   }
 }
