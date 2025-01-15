@@ -3,9 +3,9 @@ package com.xiving.adventofcode.year2019;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 public class Day12 extends Year2019Day {
 
@@ -95,13 +95,13 @@ public class Day12 extends Year2019Day {
   private static class PatternFinder {
 
     private List<Integer> pattern;
-    private List<Integer> repetition;
+    private int repetitionStart;
     boolean found;
 
     private PatternFinder() {
       pattern = new ArrayList<>();
       pattern.add(0);
-      repetition = new ArrayList<>();
+      repetitionStart = MINIMAL_PATTERN_LENGTH;
       found = false;
     }
 
@@ -110,29 +110,30 @@ public class Day12 extends Year2019Day {
         return;
       }
 
-      if (pattern.size() < MINIMAL_PATTERN_LENGTH) {
-        pattern.add(x);
-      } else if (pattern.get(repetition.size()) == x) {
-        repetition.add(x);
+      pattern.add(x);
 
-        if (pattern.size() == repetition.size()) {
+      if (pattern.size() <= MINIMAL_PATTERN_LENGTH) {
+        return;
+      }
+
+      if (pattern.getLast() == pattern.get(pattern.size() - repetitionStart - 1)) {
+        if (pattern.size() == repetitionStart<<1) {
           found = true;
         }
-      } else {
-        repetition.add(x);
 
-        loop:
-        while (true) {
-          pattern.add(repetition.removeFirst());
+        return;
+      }
 
-          for (int i = 0; i < repetition.size(); i++) {
-            if (pattern.get(i) != repetition.get(i)) {
-              continue loop;
-            }
+      loop:
+      while (repetitionStart < pattern.size()) {
+        for (int i = repetitionStart; i < pattern.size(); i++) {
+          if (pattern.get(i - repetitionStart) != pattern.get(i)) {
+            repetitionStart += 1;
+            continue loop;
           }
-
-          break;
         }
+
+        break;
       }
     }
   }
@@ -190,9 +191,9 @@ public class Day12 extends Year2019Day {
         }
       }
 
-      int xPeriod = Arrays.stream(xPatterns).mapToInt(e -> e.pattern.size()).max().getAsInt();
-      int yPeriod = Arrays.stream(yPatterns).mapToInt(e -> e.pattern.size()).max().getAsInt();
-      int zPeriod = Arrays.stream(zPatterns).mapToInt(e -> e.pattern.size()).max().getAsInt();
+      int xPeriod = Arrays.stream(xPatterns).mapToInt(e -> e.pattern.size() / 2).max().getAsInt();
+      int yPeriod = Arrays.stream(yPatterns).mapToInt(e -> e.pattern.size() / 2).max().getAsInt();
+      int zPeriod = Arrays.stream(zPatterns).mapToInt(e -> e.pattern.size() / 2).max().getAsInt();
 
       return String.valueOf(lcm(xPeriod, lcm(yPeriod, zPeriod)));
     }
