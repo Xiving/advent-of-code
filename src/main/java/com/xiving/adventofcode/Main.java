@@ -14,7 +14,7 @@ public class Main {
     System.out.println("Solving advent days");
 
     for (AdventDay day : adventDays) {
-      if (day.year != 2019 || day.day != 13) {
+      if (day.year != 2019 || day.day != 14) {
         continue;
       }
 
