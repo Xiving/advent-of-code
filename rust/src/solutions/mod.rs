@@ -10,11 +10,11 @@ pub trait Day {
         return 0;
     }
 
-    fn solve_part_1(&self, _: &mut Lines<BufReader<File>>) -> String {
+    fn solve_part_1(&self, _: &Vec<String>) -> String {
         return String::from("Not implemented!");
     }
 
-    fn solve_part_2(&self, _:  &mut Lines<BufReader<File>>) -> String {
+    fn solve_part_2(&self, _: &Vec<String>) -> String {
         return String::from("Not implemented!");
     }
 
