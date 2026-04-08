@@ -1,8 +1,6 @@
 mod year2025;
 
 use year2025::{Year2025};
-use std::fs::{File};
-use std::io::{Lines, BufReader};
 
 pub trait Day {
 

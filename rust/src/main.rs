@@ -1,5 +1,6 @@
 mod solutions;
 
+use std::time::{SystemTime};
 use std::io::{Result, BufRead, BufReader};
 use std::fs::{File};
 use solutions::{*};
@@ -16,10 +17,16 @@ fn main() {
 
         for day in year.get_days() {            
             if let Ok(lines) = read_lines_from_input_file(year.year_number(), day.day_number()) {
+                let start = SystemTime::now();
                 let solution_part_1 = day.solve_part_1(&lines); 
+                let middle = SystemTime::now();
                 let solution_part_2 = day.solve_part_2(&lines);
+                let end = SystemTime::now();
 
-                println!("┃ {:02}   │ {:>31} │ {:>31} ┃", day.day_number(), solution_part_1, solution_part_2);
+                let dur_part_1 = middle.duration_since(start).unwrap().as_millis();
+                let dur_part_2 = end.duration_since(middle).unwrap().as_millis();
+
+                println!("┃ {:02}   │ {:>25}{:>4}ms │ {:>25}{:>4}ms ┃", day.day_number(), solution_part_1, dur_part_1, solution_part_2, dur_part_2);
             }
         }
 
